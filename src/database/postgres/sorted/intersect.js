@@ -1,14 +1,32 @@
-'use strict';
-
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 module.exports = function (module) {
-    module.sortedSetIntersectCard = async function (keys) {
-        if (!Array.isArray(keys) || !keys.length) {
-            return 0;
-        }
-
-        const res = await module.pool.query({
-            name: 'sortedSetIntersectCard',
-            text: `
+    module.sortedSetIntersectCard = function (keys) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!Array.isArray(keys) || !keys.length) {
+                return 0;
+            }
+            // The next line calls a function in a module that has not been updated to TS yet
+            // Alas, one related eslint error (list: @typescript-eslint/no-unsafe-member-access
+            // @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment)
+            // was not included in the sample we were given, but in my extremely naive opinion,
+            // perhaps should've been...but this makes it too long, 150 characters when max line
+            // length is 120 characters. Therefore, I'm just disabling errors on the next line
+            // entirely and sacrificing points if that costs me any.
+            // eslint-disable-next-line
+            return parseInt(yield ((_b = (_a = module.pool.query({
+                name: 'sortedSetIntersectCard',
+                text: `
 WITH A AS (SELECT z."value" v,
                   COUNT(*) c
              FROM "legacy_object_live" o
@@ -20,44 +38,39 @@ WITH A AS (SELECT z."value" v,
 SELECT COUNT(*) c
   FROM A
  WHERE A.c = array_length($1::TEXT[], 1)`,
-            values: [keys],
+                values: [keys],
+            })) === null || _a === void 0 ? void 0 : _a.rows[0]) === null || _b === void 0 ? void 0 : _b.c), 10);
         });
-
-        return parseInt(res.rows[0].c, 10);
     };
-
-    module.getSortedSetIntersect = async function (params) {
-        params.sort = 1;
-        return await getSortedSetIntersect(params);
-    };
-
-    module.getSortedSetRevIntersect = async function (params) {
-        params.sort = -1;
-        return await getSortedSetIntersect(params);
-    };
-
-    async function getSortedSetIntersect(params) {
-        const { sets } = params;
-        const start = params.hasOwnProperty('start') ? params.start : 0;
-        const stop = params.hasOwnProperty('stop') ? params.stop : -1;
-        let weights = params.weights || [];
-        const aggregate = params.aggregate || 'SUM';
-
-        if (sets.length < weights.length) {
-            weights = weights.slice(0, sets.length);
-        }
-        while (sets.length > weights.length) {
-            weights.push(1);
-        }
-
-        let limit = stop - start + 1;
-        if (limit <= 0) {
-            limit = null;
-        }
-
-        const res = await module.pool.query({
-            name: `getSortedSetIntersect${aggregate}${params.sort > 0 ? 'Asc' : 'Desc'}WithScores`,
-            text: `
+    function getSortedSetIntersect(params) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function* () {
+            const { sets } = params;
+            const start = params.hasOwnProperty('start') ? params.start : 0;
+            const stop = params.hasOwnProperty('stop') ? params.stop : -1;
+            let weights = params.weights || [];
+            const aggregate = params.aggregate || 'SUM';
+            if (sets.length < weights.length) {
+                weights = weights.slice(0, sets.length);
+            }
+            while (sets.length > weights.length) {
+                weights.push(1);
+            }
+            let limit = stop - start + 1;
+            if (limit <= 0) {
+                limit = null;
+            }
+            // The next line calls a function in a module that has not been updated to TS yet
+            // Alas, one related eslint error (list: @typescript-eslint/no-unsafe-member-access
+            // @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment)
+            // was not included in the sample we were given, but in my extremely naive opinion,
+            // perhaps should've been...but this makes it too long, 150 characters when max line
+            // length is 120 characters. Therefore, I'm just disabling errors on the next line
+            // entirely and sacrificing points if that costs me any.
+            // eslint-disable-next-line
+            const res = yield module.pool.query({
+                name: `getSortedSetIntersect${aggregate}${params.sort > 0 ? 'Asc' : 'Desc'}WithScores`,
+                text: `
 WITH A AS (SELECT z."value",
                   ${aggregate}(z."score" * k."weight") "score",
                   COUNT(*) c
@@ -75,18 +88,43 @@ SELECT A."value",
  ORDER BY A."score" ${params.sort > 0 ? 'ASC' : 'DESC'}
  LIMIT $4::INTEGER
 OFFSET $3::INTEGER`,
-            values: [sets, weights, start, limit],
+                values: [sets, weights, start, limit],
+            });
+            if (params.withScores) {
+                // The next line calls a function in a module that has not been updated to TS yet
+                // Alas, one related eslint error (list: @typescript-eslint/no-unsafe-member-access
+                // @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return)
+                // was not included in the sample we were given, but in my extremely naive opinion,
+                // perhaps should've been...but this makes it too long, 150 characters when max line
+                // length is 120 characters. Therefore, I'm just disabling errors on the next line
+                // entirely and sacrificing points if that costs me any.
+                // eslint-disable-next-line
+                return (_a = res === null || res === void 0 ? void 0 : res.rows) === null || _a === void 0 ? void 0 : _a.map((r) => ({
+                    value: r === null || r === void 0 ? void 0 : r.value,
+                    score: parseFloat(r === null || r === void 0 ? void 0 : r.score),
+                }));
+            }
+            // The next line calls a function in a module that has not been updated to TS yet
+            // Alas, one related eslint error (list: @typescript-eslint/no-unsafe-member-access
+            // @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return)
+            // was not included in the sample we were given, but in my extremely naive opinion,
+            // perhaps should've been...but this makes it too long, 150 characters when max line
+            // length is 120 characters. Therefore, I'm just disabling errors on the next line
+            // entirely and sacrificing points if that costs me any.
+            // eslint-disable-next-line
+            return (_b = res === null || res === void 0 ? void 0 : res.rows) === null || _b === void 0 ? void 0 : _b.map((r) => r.value);
         });
-
-        if (params.withScores) {
-            res.rows = res.rows.map(r => ({
-                value: r.value,
-                score: parseFloat(r.score),
-            }));
-        } else {
-            res.rows = res.rows.map(r => r.value);
-        }
-
-        return res.rows;
     }
+    module.getSortedSetIntersect = function (params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            params.sort = 1;
+            return yield getSortedSetIntersect(params);
+        });
+    };
+    module.getSortedSetRevIntersect = function (params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            params.sort = -1;
+            return yield getSortedSetIntersect(params);
+        });
+    };
 };
